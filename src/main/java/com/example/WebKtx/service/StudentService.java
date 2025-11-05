@@ -1,6 +1,7 @@
 package com.example.WebKtx.service;
 
 import com.example.WebKtx.dto.StudentDto.StudentCreateRequest;
+import com.example.WebKtx.dto.StudentDto.StudentInRoomResponse;
 import com.example.WebKtx.dto.StudentDto.StudentResponse;
 import com.example.WebKtx.dto.StudentDto.StudentUpdateRequest;
 import jakarta.transaction.Transactional;
@@ -16,4 +17,5 @@ public interface StudentService {
     StudentResponse findById(String id);
 
     List<StudentResponse> getAll();
+    List<StudentInRoomResponse> getStudentsInRoom(String roomId);
 }

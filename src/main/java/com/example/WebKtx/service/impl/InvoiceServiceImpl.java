@@ -23,6 +23,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import static com.example.WebKtx.common.Util.PaginationUtils.wrap;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -33,27 +35,28 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final RoomServiceRepository roomServiceRepo;
     private final PaymentRepository paymentRepo;
     private final RoomRepository roomRepo;
-    private final StudentRepository studentRepo;
     private final InvoiceMapper mapper;
 
     @Override
     public InvoiceResponse create(InvoiceCreateRequest req) {
-        // unique (room, month)
-        invoiceRepo.findByRoomAndMonth(req.getRoomId(), req.getMonth()).ifPresent(x -> {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Invoice already existed for room/month");
+        // Chuẩn hóa month về ngày 1
+        LocalDate month = req.getMonth().withDayOfMonth(1);
+
+        // Unique (room, month)
+        invoiceRepo.findByRoomAndMonth(req.getRoomId(), month).ifPresent(x -> {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Invoice already exists for room/month");
         });
 
         Room room = roomRepo.findById(req.getRoomId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "room not found"));
-        Student stu = studentRepo.findById(req.getStudentId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "student not found"));
 
+        // Room fee lấy từ req hoặc room.price
+        BigDecimal roomFee = nonNullNonNegative(req.getRoomFee(), room.getPrice(), "roomFee");
         Invoice inv = Invoice.builder()
                 .room(room)
-                .student(stu) // cách A còn student
-                .month(req.getMonth())
+                .month(month)
                 .createdAt(LocalDate.now())
-                .roomFee(req.getRoomFee() != null ? req.getRoomFee() : room.getPrice())
+                .roomFee(roomFee)
                 .totalServiceFee(BigDecimal.ZERO)
                 .totalAmount(BigDecimal.ZERO)
                 .status(InvoiceStatus.UNPAID)
@@ -61,14 +64,14 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         inv = invoiceRepo.save(inv);
 
-        // thêm các dòng chi tiết
-        if (req.getDetails() != null) {
+        // Add các dòng chi tiết
+        if (req.getDetails() != null && !req.getDetails().isEmpty()) {
             for (ServiceDetailItem it : req.getDetails()) {
-                addOrReplaceDetail(inv, it);
+                addDetailLine(inv, it);
             }
         }
 
-        // tính tổng
+        // Tính tổng
         recomputeInternal(inv.getId());
 
         return loadFull(inv.getId());
@@ -79,13 +82,19 @@ public class InvoiceServiceImpl implements InvoiceService {
         Invoice inv = invoiceRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        if (req.getRoomFee() != null) inv.setRoomFee(req.getRoomFee());
-        if (req.getStatus() != null) inv.setStatus(req.getStatus());
+        if (req.getRoomFee() != null) {
+            inv.setRoomFee(nonNegative(req.getRoomFee(), "roomFee"));
+        }
+        if (req.getStatus() != null) {
+            inv.setStatus(req.getStatus());
+        }
 
-        // nếu truyền details => replace toàn bộ
+        // replace toàn bộ details nếu truyền vào
         if (req.getDetails() != null) {
             detailRepo.deleteAllByInvoiceId(inv.getId());
-            for (ServiceDetailItem it : req.getDetails()) addOrReplaceDetail(inv, it);
+            for (ServiceDetailItem it : req.getDetails()) {
+                addDetailLine(inv, it);
+            }
         }
 
         recomputeInternal(inv.getId());
@@ -109,7 +118,8 @@ public class InvoiceServiceImpl implements InvoiceService {
     public ResultPaginationDTO getAll(Pageable pageable) {
         Page<Invoice> page = invoiceRepo.findAll(pageable);
         List<InvoiceSummaryResponse> items = page.getContent().stream()
-                .map(mapper::toSummary).toList();
+                .map(mapper::toSummary)
+                .toList();
 
         ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
         meta.setPage(pageable.getPageNumber() + 1);
@@ -127,14 +137,14 @@ public class InvoiceServiceImpl implements InvoiceService {
     public InvoiceResponse addDetail(String invoiceId, ServiceDetailItem item) {
         Invoice inv = invoiceRepo.findById(invoiceId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        addOrReplaceDetail(inv, item);
+        addDetailLine(inv, item);
         recomputeInternal(invoiceId);
         return loadFull(invoiceId);
     }
 
     @Override
     public InvoiceResponse removeDetail(String invoiceId, String detailId) {
-        Invoice inv = invoiceRepo.findById(invoiceId)
+        invoiceRepo.findById(invoiceId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         detailRepo.deleteById(detailId);
         recomputeInternal(invoiceId);
@@ -151,7 +161,9 @@ public class InvoiceServiceImpl implements InvoiceService {
     public InvoiceResponse markPaidIfEnough(String id) {
         Invoice inv = invoiceRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        recomputeInternal(id); // đảm bảo totalAmount đúng
+
+        // đảm bảo total đúng trước khi so sánh
+        recomputeInternal(id);
 
         BigDecimal paid = paymentRepo.sumSuccessAmount(id);
         if (paid.compareTo(inv.getTotalAmount()) >= 0) {
@@ -163,12 +175,14 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     // ================== Helpers ==================
 
-    private void addOrReplaceDetail(Invoice inv, ServiceDetailItem it) {
+    private void addDetailLine(Invoice inv, ServiceDetailItem it) {
         RoomService svc = resolveService(it);
 
-        BigDecimal qty = it.getQuantity() != null ? it.getQuantity() : BigDecimal.ZERO;
-        BigDecimal unitPrice = it.getUnitPrice() != null ? it.getUnitPrice()
-                : (svc.getPrice() != null ? svc.getPrice() : BigDecimal.ZERO);
+        BigDecimal qty = nonNegative(defaultZero(it.getQuantity()), "quantity");
+        BigDecimal unitPrice = nonNegative(
+                it.getUnitPrice() != null ? it.getUnitPrice() : defaultZero(svc.getPrice()),
+                "unitPrice"
+        );
 
         ServiceDetail sd = ServiceDetail.builder()
                 .invoice(inv)
@@ -206,7 +220,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         inv.setTotalServiceFee(svcTotal);
-        inv.setTotalAmount(inv.getRoomFee().add(svcTotal));
+        inv.setTotalAmount(nonNegative(inv.getRoomFee(), "roomFee").add(svcTotal));
         invoiceRepo.save(inv);
     }
 
@@ -216,4 +230,96 @@ public class InvoiceServiceImpl implements InvoiceService {
         List<ServiceDetail> lines = detailRepo.findAllByInvoiceIdFetchService(id);
         return mapper.toResponse(inv, lines);
     }
+
+    // ===== validate helpers =====
+    private BigDecimal nonNullNonNegative(BigDecimal prefer, BigDecimal fallback, String field) {
+        BigDecimal v = prefer != null ? prefer : defaultZero(fallback);
+        return nonNegative(v, field);
+    }
+
+    private BigDecimal nonNegative(BigDecimal v, String field) {
+        if (v == null) v = BigDecimal.ZERO;
+        if (v.signum() < 0)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, field + " must be >= 0");
+        return v;
+    }
+
+    private BigDecimal defaultZero(BigDecimal v) {
+        return v == null ? BigDecimal.ZERO : v;
+    }
+
+    // ===== NEW: Search =====
+    @Override
+    @Transactional(readOnly = true)
+    public ResultPaginationDTO searchByMonth(LocalDate month, Pageable pageable) {
+        Page<Invoice> page = invoiceRepo.findByMonth(month, pageable);
+        List<InvoiceSummaryResponse> items = page.getContent().stream()
+                .map(mapper::toSummary)
+                .toList();
+
+        ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
+        meta.setPage(pageable.getPageNumber() + 1);
+        meta.setPageSize(pageable.getPageSize());
+        meta.setPages(page.getTotalPages());
+        meta.setTotal(page.getTotalElements());
+
+        ResultPaginationDTO dto = new ResultPaginationDTO();
+        dto.setMeta(meta);
+        dto.setResult(items);
+        return dto;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ResultPaginationDTO searchByRoom(String roomId, Pageable pageable) {
+        Page<Invoice> page = invoiceRepo.findByRoomId(roomId, pageable);
+        List<InvoiceSummaryResponse> items = page.getContent().stream()
+                .map(mapper::toSummary)
+                .toList();
+
+        ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
+        meta.setPage(pageable.getPageNumber() + 1);
+        meta.setPageSize(pageable.getPageSize());
+        meta.setPages(page.getTotalPages());
+        meta.setTotal(page.getTotalElements());
+
+        ResultPaginationDTO dto = new ResultPaginationDTO();
+        dto.setMeta(meta);
+        dto.setResult(items);
+        return dto;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ResultPaginationDTO searchByStatus(InvoiceStatus status, Pageable pageable) {
+        Page<Invoice> page = invoiceRepo.findByStatus(status, pageable);
+        List<InvoiceSummaryResponse> items = page.getContent().stream()
+                .map(mapper::toSummary)
+                .toList();
+
+        ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
+        meta.setPage(pageable.getPageNumber() + 1);
+        meta.setPageSize(pageable.getPageSize());
+        meta.setPages(page.getTotalPages());
+        meta.setTotal(page.getTotalElements());
+
+        ResultPaginationDTO dto = new ResultPaginationDTO();
+        dto.setMeta(meta);
+        dto.setResult(items);
+        return dto;
+    }
+
+    @Override
+    public InvoiceResponse findLatestUnpaidByRoom(String roomId) {
+        Invoice inv = invoiceRepo
+                .findFirstByRoom_IdAndStatusOrderByMonthDesc(roomId, InvoiceStatus.UNPAID)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "No UNPAID invoice for this room"));
+        List<ServiceDetail> lines = inv.getServiceDetails() == null
+                ? List.of()
+                : inv.getServiceDetails().stream().toList();
+
+        return mapper.toResponse(inv, lines);
+    }
 }
+

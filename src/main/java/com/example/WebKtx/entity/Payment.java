@@ -23,6 +23,10 @@ public class Payment {
     @JoinColumn(name="invoice_id", nullable = false)
     Invoice invoice;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="student_id")
+    Student payer;
+
     @Column(name="payment_date", nullable = false)
     LocalDate paymentDate;
 

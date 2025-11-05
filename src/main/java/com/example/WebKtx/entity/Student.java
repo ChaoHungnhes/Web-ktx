@@ -84,6 +84,6 @@ public class Student {
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
     Set<RoomRegistration> registrations;
 
-    @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
-    Set<Invoice> invoices;
+//    @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
+//    Set<Invoice> invoices;
 }

@@ -1,5 +1,6 @@
 package com.example.WebKtx.repository;
 
+import com.example.WebKtx.common.Enum.InvoiceStatus;
 import com.example.WebKtx.entity.Invoice;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,4 +25,24 @@ public interface InvoiceRepository extends JpaRepository<Invoice, String> {
 
     @EntityGraph(attributePaths = {"room", "serviceDetails", "serviceDetails.service"})
     Optional<Invoice> findWithDetailsById(String id);
+
+    @Query("""
+        select i from Invoice i
+        where i.month = :month
+    """)
+    Page<Invoice> findByMonth(@Param("month") LocalDate month, Pageable pageable);
+
+    @Query("""
+        select i from Invoice i
+        where i.room.id = :roomId
+    """)
+    Page<Invoice> findByRoomId(@Param("roomId") String roomId, Pageable pageable);
+
+    Page<Invoice> findByStatus(InvoiceStatus status, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"room", "serviceDetails", "serviceDetails.service"})
+    Optional<Invoice> findFirstByRoom_IdAndStatusOrderByMonthDesc(
+            String roomId,
+            InvoiceStatus status
+    );
 }

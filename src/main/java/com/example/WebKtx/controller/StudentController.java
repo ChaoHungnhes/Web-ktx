@@ -1,5 +1,6 @@
 package com.example.WebKtx.controller;
 
+import com.example.WebKtx.anotation.ApiMessage;
 import com.example.WebKtx.dto.StudentDto.StudentCreateRequest;
 import com.example.WebKtx.dto.StudentDto.StudentUpdateRequest;
 import com.example.WebKtx.service.StudentService;
@@ -30,5 +31,11 @@ public class StudentController {
     public ResponseEntity<?> findById(@PathVariable String id) { return ResponseEntity.ok(service.findById(id)); }
     @GetMapping
     public ResponseEntity<?> getAll() { return ResponseEntity.ok(service.getAll()); }
+
+    @GetMapping("/{roomId}/students")
+    @ApiMessage("Get students by room success")
+    public ResponseEntity<?> getStudentsByRoom(@PathVariable String roomId) {
+        return ResponseEntity.ok(service.getStudentsInRoom(roomId));
+    }
 }
 

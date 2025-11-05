@@ -15,7 +15,6 @@ import java.util.List;
 public class InvoiceCreateRequest {
     @NotBlank String roomId;
     @NotNull LocalDate month;         // quy ước ngày 1
-    @NotBlank String studentId;        // cách A còn cột student_id
     BigDecimal roomFee;                // null => copy room.price
     List<ServiceDetailItem> details;   // điện/nước/phát sinh
 }

@@ -1,6 +1,7 @@
 package com.example.WebKtx.service.impl;
 
 import com.example.WebKtx.dto.StudentDto.StudentCreateRequest;
+import com.example.WebKtx.dto.StudentDto.StudentInRoomResponse;
 import com.example.WebKtx.dto.StudentDto.StudentResponse;
 import com.example.WebKtx.dto.StudentDto.StudentUpdateRequest;
 import com.example.WebKtx.entity.Room;
@@ -132,6 +133,14 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public List<StudentResponse> getAll() {
         return repo.findAll().stream().map(mapper::toResponse).toList();
+    }
+
+    @Override
+    public List<StudentInRoomResponse> getStudentsInRoom(String roomId) {
+        if (!roomRepo.existsById(roomId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "room not found");
+        }
+        return repo.findByRoomIdAsDto(roomId);
     }
 }
 
