@@ -1,0 +1,23 @@
+version: "3.9"
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: db-webKtx
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: dbktx
+      MYSQL_USER: user123
+      MYSQL_PASSWORD: 123456
+      TZ: Asia/Ho_Chi_Minh
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge

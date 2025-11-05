@@ -1,0 +1,38 @@
+@'
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Build
+target/
+build/
+out/
+
+# Logs
+logs/
+*.log
+
+# Env
+.env
+*.env
+
+# Frontend (nếu có)
+node_modules/
+
+# Database/data volumes
+mysql-data/
+postgres-data/
+data/
+
+# Java
+*.class
+
+# Coverage/others
+coverage/
+.sonar/
+'@ | Out-File -FilePath .gitignore -Encoding utf8 -Append
