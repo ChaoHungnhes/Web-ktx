@@ -8,8 +8,11 @@ import com.example.WebKtx.service.RoomRegistrationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/webktx/room-registrations")
@@ -97,6 +100,20 @@ public class RoomRegistrationController {
     @ApiMessage("Reject room registration success")
     public ResponseEntity<?> reject(@PathVariable String id) {
         return ResponseEntity.ok(service.reject(id));
+    }
+
+    @GetMapping("/by-date")
+    @ApiMessage("Search room registrations by date success")
+    public ResponseEntity<?> searchByDate(
+            @RequestParam
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate date,
+            @RequestParam(defaultValue = "0") int pageIndex,
+            @RequestParam(defaultValue = "10") int pageSize
+    ) {
+        ResultPaginationDTO dto =
+                service.searchByDate(date, PageRequest.of(pageIndex, pageSize));
+        return ResponseEntity.ok(dto);
     }
 }
 

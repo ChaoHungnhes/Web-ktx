@@ -1,7 +1,6 @@
 package com.example.WebKtx.service;
 
-import com.example.WebKtx.dto.ServicePriceDto;
-import com.example.WebKtx.entity.RoomService;
+import com.example.WebKtx.dto.RoomServiceDetailDto.ServicePriceDto;
 
 import java.util.List;
 

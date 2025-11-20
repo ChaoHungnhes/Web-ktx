@@ -1,4 +1,4 @@
-package com.example.WebKtx.dto;
+package com.example.WebKtx.dto.RoomServiceDetailDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

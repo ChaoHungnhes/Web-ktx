@@ -1,7 +1,6 @@
 package com.example.WebKtx.service.impl;
 
-import com.example.WebKtx.dto.ServicePriceDto;
-import com.example.WebKtx.entity.RoomService;
+import com.example.WebKtx.dto.RoomServiceDetailDto.ServicePriceDto;
 import com.example.WebKtx.repository.RoomServiceRepository;
 import com.example.WebKtx.service.RoomService2;
 import lombok.RequiredArgsConstructor;

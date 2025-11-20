@@ -6,6 +6,7 @@ import com.example.WebKtx.dto.RoomRegistrationDto.RoomRegistrationResponse;
 import com.example.WebKtx.dto.RoomRegistrationDto.RoomRegistrationUpdateRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface RoomRegistrationService {
@@ -22,4 +23,5 @@ public interface RoomRegistrationService {
     ResultPaginationDTO getAllByRejected(Pageable pageable);
     RoomRegistrationResponse approve(String id);
     RoomRegistrationResponse reject(String id);
+    ResultPaginationDTO searchByDate(LocalDate date, Pageable pageable);
 }

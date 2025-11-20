@@ -21,24 +21,30 @@ public class Announcement {
     @Column(name="title", nullable = false, length = 100)
     String title;
 
+    @Column(name="summary", length = 255)       // ✅ tóm tắt ngắn
+    String summary;
+
     @Lob
     @Column(name="content", nullable = false)
     String content;
 
     @Enumerated(EnumType.STRING)
     @Column(name="target", nullable = false, length = 16)
-    Target target;
+    Target target;              // ALL | STUDENT | MANAGER ... (tùy enum của bạn)
 
     @Column(name="created_at", nullable = false)
     LocalDateTime createdAt;
 
     @Enumerated(EnumType.STRING)
     @Column(name="channel", nullable = false, length = 16)
-    Channel channel;
+    Channel channel;            // WEB | EMAIL | MOBILE ... (tùy enum)
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="created_by")
     User createdBy;
+
+    @Column(name="image_url")   // ✅ link ảnh đã upload
+    String imageUrl;
 
     @PrePersist
     void prePersist() {

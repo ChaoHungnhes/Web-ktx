@@ -24,6 +24,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static com.example.WebKtx.common.Util.PaginationUtils.wrap;
@@ -167,5 +168,11 @@ public class RoomRegistrationServiceImpl implements RoomRegistrationService {
 
         return repo.findByIdAsDto(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "cannot load registration dto"));
+    }
+
+    @Override
+    public ResultPaginationDTO searchByDate(LocalDate date, Pageable pageable) {
+        Page<RoomRegistrationResponse> page = repo.findAllByRegistrationDate(date, pageable);
+        return wrap(page);
     }
 }

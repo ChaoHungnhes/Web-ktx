@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -155,4 +156,32 @@ public interface RoomRegistrationRepository extends JpaRepository<RoomRegistrati
        where rr.status = 'REJECTED'
     """)
     Page<RoomRegistrationResponse> findAllByRejected(Pageable pageable);
+
+    @Query("""
+       select new com.example.WebKtx.dto.RoomRegistrationDto.RoomRegistrationResponse(
+         rr.id,
+         s.id,
+         concat(s.firstName, ' ', s.lastName),
+         s.gender,
+         s.academicYear,
+         s.className,
+         r.id,
+         r.name,
+         d.id,
+         d.name,
+         rr.registrationDate,
+         rr.status,
+         rr.requestType
+       )
+       from RoomRegistration rr
+       join rr.student s
+       join rr.room r
+       join r.dormitory d
+       where rr.registrationDate = :date
+       order by rr.registrationDate desc
+    """)
+    Page<RoomRegistrationResponse> findAllByRegistrationDate(
+            @Param("date") LocalDate date,
+            Pageable pageable
+    );
 }
