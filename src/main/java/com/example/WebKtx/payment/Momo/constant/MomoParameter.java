@@ -1,4 +1,4 @@
-package com.example.WebKtx.payment.constant;
+package com.example.WebKtx.payment.Momo.constant;
 
 public class MomoParameter {
     public static String PARTNER_CODE = "partnerCode";

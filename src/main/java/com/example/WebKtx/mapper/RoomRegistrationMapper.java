@@ -11,20 +11,31 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = "spring")
 public interface RoomRegistrationMapper {
 
-    // student, room sẽ set trong service
+    // === CREATE: chỉ map các field cơ bản ===
     @Mapping(target="student", ignore = true)
     @Mapping(target="room", ignore = true)
+    @Mapping(target="status", ignore = true)        // để @PrePersist lo
+    @Mapping(target="requestType", ignore = true)   // để @PrePersist lo
     RoomRegistration toEntity(RoomRegistrationCreateRequest req);
 
-    // room có thể đổi trong service nếu req.roomId != null
+    // === UPDATE: chỉ update field cơ bản, không đè student/room ===
     @Mapping(target="student", ignore = true)
     @Mapping(target="room", ignore = true)
+    @Mapping(target="status", ignore = true)
+    @Mapping(target="requestType", ignore = true)
     void update(@MappingTarget RoomRegistration entity, RoomRegistrationUpdateRequest req);
 
+    // === toResponse: CHỈ dùng nếu bạn convert từ entity, không phải projection ===
     @Mapping(target="studentId", source="student.id")
+    @Mapping(target="studentName", expression="java(entity.getStudent().getFirstName() + \" \" + entity.getStudent().getLastName())")
+    @Mapping(target="gender", source="student.gender")
+    @Mapping(target="academicYear", source="student.academicYear")
+    @Mapping(target="className", source="student.className")
+
     @Mapping(target="roomId", source="room.id")
+    @Mapping(target="roomName", source="room.name")
     @Mapping(target="dormId", source="room.dormitory.id")
     @Mapping(target="dormName", source="room.dormitory.name")
-        // studentName sẽ tạo ở repo projection; nếu map từ entity có thể concat first+last ở service
+
     RoomRegistrationResponse toResponse(RoomRegistration entity);
 }

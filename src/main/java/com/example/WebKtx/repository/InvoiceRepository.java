@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -45,4 +46,23 @@ public interface InvoiceRepository extends JpaRepository<Invoice, String> {
             String roomId,
             InvoiceStatus status
     );
+
+    // count invoices for month
+    @Query("select count(i) from Invoice i where i.month = :month")
+    long countByMonth(@Param("month") LocalDate month);
+
+    @Query("select count(i) from Invoice i where i.month = :month and i.status = :status")
+    long countByMonthAndStatus(@Param("month") LocalDate month, @Param("status") InvoiceStatus status);
+
+    @Query("select coalesce(sum(i.totalAmount), 0) from Invoice i where i.month = :month")
+    BigDecimal sumTotalAmountByMonth(@Param("month") LocalDate month);
+
+    // sum paid via payments (successful)
+    @Query("""
+    select coalesce(sum(p.amount), 0)
+    from Payment p
+    join p.invoice i
+    where i.month = :month and p.status = com.example.WebKtx.common.Enum.PaymentStatus.SUCCESS
+""")
+    BigDecimal sumPaidAmountByMonth(@Param("month") LocalDate month);
 }

@@ -27,7 +27,7 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
     private final String[] PUBLIC_ENDPOINTS = {
-        "/webktx/authentication/login", "/webktx/authentication/introspect", "/webktx/authentication/logout", "/webktx/authentication/refresh"
+            "/webktx/vnpay/verify","/webktx/vnpay/ipn","/webktx/authentication/login", "/webktx/authentication/introspect", "/webktx/authentication/logout", "/webktx/authentication/refresh"
     };
 
     @Autowired
@@ -41,7 +41,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(
                         request ->
-                                request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
+                                request.requestMatchers(PUBLIC_ENDPOINTS)
                                         .permitAll()
                                         // Áp dụng quy tắc này cho các request có method POST và endpoint là /users,
                                         // /auth/token, /auth/introspect

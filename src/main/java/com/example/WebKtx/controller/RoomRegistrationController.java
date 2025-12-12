@@ -8,6 +8,7 @@ import com.example.WebKtx.service.RoomRegistrationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -114,6 +115,26 @@ public class RoomRegistrationController {
         ResultPaginationDTO dto =
                 service.searchByDate(date, PageRequest.of(pageIndex, pageSize));
         return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping("/student/{studentId}/transfer")
+    public ResponseEntity<?> getTransferByStudent(
+            @PathVariable String studentId,
+            @RequestParam(defaultValue = "0") int pageIndex,
+            @RequestParam(defaultValue = "10") int pageSize
+    ) {
+        Pageable pageable = PageRequest.of(pageIndex, pageSize);
+        return ResponseEntity.ok(service.findTransferByStudent(studentId, pageable));
+    }
+
+    @GetMapping("/student/{studentId}/checkout")
+    public ResponseEntity<?> getCheckoutByStudent(
+            @PathVariable String studentId,
+            @RequestParam(defaultValue = "0") int pageIndex,
+            @RequestParam(defaultValue = "10") int pageSize
+    ) {
+        Pageable pageable = PageRequest.of(pageIndex, pageSize);
+        return ResponseEntity.ok(service.findCheckoutByStudent(studentId, pageable));
     }
 }
 

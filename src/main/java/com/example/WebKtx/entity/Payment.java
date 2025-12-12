@@ -40,4 +40,11 @@ public class Payment {
     @Enumerated(EnumType.STRING)
     @Column(name="status", nullable = false, length = 16)
     PaymentStatus status;
+
+    // ====== VNPAY EXTRA ======
+    @Column(name="vnp_order_id", length = 64, unique = true)
+    String vnpOrderId;        // vnp_TxnRef
+
+    @Column(name="vnp_transaction_no", length = 64)
+    String vnpTransactionNo;  // vnp_TransactionNo (IPN)
 }

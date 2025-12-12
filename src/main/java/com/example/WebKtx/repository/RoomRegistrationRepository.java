@@ -184,4 +184,64 @@ public interface RoomRegistrationRepository extends JpaRepository<RoomRegistrati
             @Param("date") LocalDate date,
             Pageable pageable
     );
+
+    // 🔹 Tất cả đơn TRANSFER của 1 sinh viên (có phân trang)
+    @Query("""
+       select new com.example.WebKtx.dto.RoomRegistrationDto.RoomRegistrationResponse(
+         rr.id,
+         s.id,
+         concat(s.firstName, ' ', s.lastName),
+         s.gender,
+         s.academicYear,
+         s.className,
+         r.id,
+         r.name,
+         d.id,
+         d.name,
+         rr.registrationDate,
+         rr.status,
+         rr.requestType
+       )
+       from RoomRegistration rr
+       join rr.student s
+       join rr.room r
+       join r.dormitory d
+       where s.id = :studentId
+         and rr.requestType = 'TRANSFER'
+       order by rr.registrationDate desc
+    """)
+    Page<RoomRegistrationResponse> findAllTransferByStudent(
+            @Param("studentId") String studentId,
+            Pageable pageable
+    );
+
+    // 🔹 Tất cả đơn CHECKOUT của 1 sinh viên (có phân trang)
+    @Query("""
+       select new com.example.WebKtx.dto.RoomRegistrationDto.RoomRegistrationResponse(
+         rr.id,
+         s.id,
+         concat(s.firstName, ' ', s.lastName),
+         s.gender,
+         s.academicYear,
+         s.className,
+         r.id,
+         r.name,
+         d.id,
+         d.name,
+         rr.registrationDate,
+         rr.status,
+         rr.requestType
+       )
+       from RoomRegistration rr
+       join rr.student s
+       join rr.room r
+       join r.dormitory d
+       where s.id = :studentId
+         and rr.requestType = 'CHECKOUT'
+       order by rr.registrationDate desc
+    """)
+    Page<RoomRegistrationResponse> findAllCheckoutByStudent(
+            @Param("studentId") String studentId,
+            Pageable pageable
+    );
 }

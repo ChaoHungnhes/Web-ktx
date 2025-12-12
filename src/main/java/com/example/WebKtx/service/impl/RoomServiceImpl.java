@@ -3,6 +3,7 @@ package com.example.WebKtx.service.impl;
 import com.example.WebKtx.common.Enum.RoomType;
 import com.example.WebKtx.dto.ResultPaginationDTO;
 import com.example.WebKtx.dto.RoomDto.RoomCreateRequest;
+import com.example.WebKtx.dto.RoomDto.RoomIdNameDormResponse;
 import com.example.WebKtx.dto.RoomDto.RoomResponse;
 import com.example.WebKtx.dto.RoomDto.RoomUpdateRequest;
 import com.example.WebKtx.entity.Room;
@@ -120,5 +121,9 @@ public class RoomServiceImpl implements RoomService {
 
     private String blankToNull(String s) {
         return (s == null || s.isBlank()) ? null : s;
+    }
+    @Override
+    public List<RoomIdNameDormResponse> getAllIdNameAndDorm() {
+        return roomRepo.findAllIdNameAndDorm();
     }
 }

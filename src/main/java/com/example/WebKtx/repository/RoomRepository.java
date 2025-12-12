@@ -1,7 +1,10 @@
 package com.example.WebKtx.repository;
 
 import com.example.WebKtx.common.Enum.RoomType;
+import com.example.WebKtx.dto.RoomDto.RoomIdNameDormResponse;
 import com.example.WebKtx.dto.RoomDto.RoomResponse;
+import com.example.WebKtx.dto.reportDto.DebtRoomDto;
+import com.example.WebKtx.dto.reportDto.RoomOccupancyDto;
 import com.example.WebKtx.entity.Room;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable; // ✅ đúng import
@@ -10,6 +13,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -158,4 +162,72 @@ public interface RoomRepository extends JpaRepository<Room, String> {
                                      @Param("maxOccupants") Integer maxOccupants);
     @Query("select max(r.floor) from Room r")
     Integer findMaxFloor();
+
+    @Query("""
+       select new com.example.WebKtx.dto.RoomDto.RoomIdNameDormResponse(
+            r.id,
+            r.name,
+            d.id,
+            d.name
+       )
+       from Room r
+       join r.dormitory d
+       order by d.name asc, r.name asc
+       """)
+    List<RoomIdNameDormResponse> findAllIdNameAndDorm();
+
+    // 1) Debt rooms for a given month (room + invoice left join)
+    @Query("""
+        select new com.example.WebKtx.dto.reportDto.DebtRoomDto(
+            r.id,
+            r.name,
+            d.id,
+            d.name,
+            r.floor,
+            (select count(s2) from Student s2 where s2.room.id = r.id),
+            i.totalAmount,
+            coalesce((select sum(p.amount) from Payment p where p.invoice.id = i.id and p.status = com.example.WebKtx.common.Enum.PaymentStatus.SUCCESS), 0),
+            case when i.totalAmount is null then null
+                 else i.totalAmount - coalesce((select sum(p2.amount) from Payment p2 where p2.invoice.id = i.id and p2.status = com.example.WebKtx.common.Enum.PaymentStatus.SUCCESS), 0)
+            end,
+            i.id,
+            case when i.status is null then null else i.status end
+        )
+        from Room r
+        join r.dormitory d
+        left join r.invoices i with i.month = :month
+        where (i is null) or (i.status = com.example.WebKtx.common.Enum.InvoiceStatus.UNPAID)
+        order by d.name, r.name
+    """)
+    List<DebtRoomDto> findDebtRoomsByMonth(@Param("month") LocalDate month);
+
+    // 2) occupancy per room (counts students)
+    @Query("""
+        select new com.example.WebKtx.dto.reportDto.RoomOccupancyDto(
+            r.id, r.name, d.id, d.name, r.floor,
+            count(s.id), r.maxOccupants
+        )
+        from Room r
+        join r.dormitory d
+        left join r.students s
+        group by r.id, r.name, d.id, d.name, r.floor, r.maxOccupants
+        order by d.name, r.floor, r.name
+    """)
+    List<RoomOccupancyDto> findAllRoomOccupancy();
+
+    // option: occupancy by dorm
+    @Query("""
+        select new com.example.WebKtx.dto.reportDto.RoomOccupancyDto(
+            r.id, r.name, d.id, d.name, r.floor,
+            count(s.id), r.maxOccupants
+        )
+        from Room r
+        join r.dormitory d
+        left join r.students s
+        where d.id = :dormId
+        group by r.id, r.name, d.id, d.name, r.floor, r.maxOccupants
+        order by r.floor, r.name
+    """)
+    List<RoomOccupancyDto> findRoomOccupancyByDorm(@Param("dormId") String dormId);
+
 }

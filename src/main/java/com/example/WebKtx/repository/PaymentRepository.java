@@ -14,4 +14,6 @@ public interface PaymentRepository extends JpaRepository<Payment, String> {
       where p.invoice.id = :invoiceId and p.status = com.example.WebKtx.common.Enum.PaymentStatus.SUCCESS
     """)
     BigDecimal sumSuccessAmount(@Param("invoiceId") String invoiceId);
+
+    Optional<Payment> findByVnpOrderId(String vnpOrderId);
 }

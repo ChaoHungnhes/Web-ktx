@@ -1,4 +1,4 @@
-package com.example.WebKtx.payment.model;
+package com.example.WebKtx.payment.Momo.model;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

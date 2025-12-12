@@ -1,8 +1,8 @@
-package com.example.WebKtx.payment.controller;
+package com.example.WebKtx.payment.Momo.controller;
 
-import com.example.WebKtx.payment.constant.MomoParameter;
-import com.example.WebKtx.payment.model.CreateMomoResponse;
-import com.example.WebKtx.payment.service.MomoService;
+import com.example.WebKtx.payment.Momo.constant.MomoParameter;
+import com.example.WebKtx.payment.Momo.model.CreateMomoResponse;
+import com.example.WebKtx.payment.Momo.service.MomoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

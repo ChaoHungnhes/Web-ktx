@@ -1,13 +1,13 @@
-package com.example.WebKtx.payment.service;
+package com.example.WebKtx.payment.Momo.service;
 
 import com.example.WebKtx.common.Enum.InvoiceStatus;
 import com.example.WebKtx.common.Enum.PaymentMethod;
 import com.example.WebKtx.common.Enum.PaymentStatus;
 import com.example.WebKtx.entity.Invoice;
 import com.example.WebKtx.entity.Payment;
-import com.example.WebKtx.payment.client.MomoApi;
-import com.example.WebKtx.payment.model.CreateMomoRequest;
-import com.example.WebKtx.payment.model.CreateMomoResponse;
+import com.example.WebKtx.payment.Momo.client.MomoApi;
+import com.example.WebKtx.payment.Momo.model.CreateMomoRequest;
+import com.example.WebKtx.payment.Momo.model.CreateMomoResponse;
 import com.example.WebKtx.repository.InvoiceRepository;
 import com.example.WebKtx.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;

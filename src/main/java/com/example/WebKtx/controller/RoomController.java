@@ -4,6 +4,7 @@ import com.example.WebKtx.anotation.ApiMessage;
 import com.example.WebKtx.common.Enum.RoomType;
 import com.example.WebKtx.dto.ResultPaginationDTO;
 import com.example.WebKtx.dto.RoomDto.RoomCreateRequest;
+import com.example.WebKtx.dto.RoomDto.RoomIdNameDormResponse;
 import com.example.WebKtx.dto.RoomDto.RoomResponse;
 import com.example.WebKtx.dto.RoomDto.RoomUpdateRequest;
 import com.example.WebKtx.service.RoomService;
@@ -13,6 +14,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/webktx/rooms")
@@ -119,6 +122,11 @@ public class RoomController {
     @ApiMessage("Get global max floor success")
     public ResponseEntity<?> getMaxFloor() {
         return ResponseEntity.ok(service.getMaxFloor());
+    }
+    @GetMapping("/id-name-dorm")
+    public ResponseEntity<?> getAllIdAndName() {
+        List<RoomIdNameDormResponse> data = service.getAllIdNameAndDorm();
+        return ResponseEntity.ok(data);
     }
 }
 

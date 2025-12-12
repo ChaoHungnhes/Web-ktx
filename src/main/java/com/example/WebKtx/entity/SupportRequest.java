@@ -33,11 +33,19 @@ public class SupportRequest {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="handled_by")
-    Staff handledBy;
+    User handledBy;
 
     @Lob
     @Column(name="content", nullable = false)
     String content;
+
+    @Column(name="room_name")
+    String roomName;
+    @Column(name="request_content", nullable = false)
+    String requestContent;
+    @Column(name="note_extend", nullable = false)
+    String noteExtend;
+
 
     @PrePersist
     void prePersist() {

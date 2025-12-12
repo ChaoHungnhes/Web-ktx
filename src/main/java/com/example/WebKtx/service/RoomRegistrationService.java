@@ -24,4 +24,6 @@ public interface RoomRegistrationService {
     RoomRegistrationResponse approve(String id);
     RoomRegistrationResponse reject(String id);
     ResultPaginationDTO searchByDate(LocalDate date, Pageable pageable);
+    ResultPaginationDTO findTransferByStudent(String studentId, Pageable pageable);
+    ResultPaginationDTO findCheckoutByStudent(String studentId, Pageable pageable);
 }

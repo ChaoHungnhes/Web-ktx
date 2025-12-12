@@ -31,4 +31,7 @@ public interface StudentRepository extends JpaRepository<Student, String> {
        order by s.lastName asc, s.firstName asc
     """)
     List<StudentInRoomResponse> findByRoomIdAsDto(@Param("roomId") String roomId);
+
+    @Query("select count(s) from Student s where s.room is not null")
+    long countByRoomIsNotNull();
 }

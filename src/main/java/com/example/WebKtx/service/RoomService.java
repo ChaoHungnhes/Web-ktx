@@ -3,6 +3,7 @@ package com.example.WebKtx.service;
 import com.example.WebKtx.common.Enum.RoomType;
 import com.example.WebKtx.dto.ResultPaginationDTO;
 import com.example.WebKtx.dto.RoomDto.RoomCreateRequest;
+import com.example.WebKtx.dto.RoomDto.RoomIdNameDormResponse;
 import com.example.WebKtx.dto.RoomDto.RoomResponse;
 import com.example.WebKtx.dto.RoomDto.RoomUpdateRequest;
 import org.springframework.data.domain.Page;
@@ -26,4 +27,5 @@ public interface RoomService {
     ResultPaginationDTO search4AsDto(String dormName, RoomType type, Integer maxOccupants, Integer floor, Pageable pageable);
     ResultPaginationDTO search3AsDto(String dormName, RoomType type, Integer maxOccupants, Pageable pageable);
     int getMaxFloor();
+    List<RoomIdNameDormResponse> getAllIdNameAndDorm();
 }
