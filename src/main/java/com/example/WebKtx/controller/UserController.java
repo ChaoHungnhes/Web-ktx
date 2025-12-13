@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,19 +19,22 @@ public class UserController {
 
     // Tạo user mới
     @PostMapping("/create")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Object> create(@Valid @RequestBody UserCreateRequest request) {
         return ResponseEntity.ok(userService.create(request));
     }
 
-    // Cập nhật user
+    // Trong UserController
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Object> update(@PathVariable String id,
-                                      @Valid @RequestBody UserUpdateRequest request) {
+                                         @Valid @RequestBody UserUpdateRequest request) {
         return ResponseEntity.ok(userService.update(id, request));
     }
 
-    // Xóa user
+    // API Delete đã có sẵn trong controller của bạn
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Object> delete(@PathVariable String id) {
         userService.delete(id);
         return ResponseEntity.ok("Delete complete");

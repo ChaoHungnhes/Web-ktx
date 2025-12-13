@@ -74,14 +74,44 @@ public class UserServiceImpl implements UserService {
     }
 
 
+    // Trong UserServiceImpl
     @Override
     @Transactional
+// @PreAuthorize("hasRole('ADMIN')") // Nên chặn ở Controller hoặc Service
     public UserCreateResponse update(String id, UserUpdateRequest request) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-        userMapper.updateUser(user, request);
+
+        // 1. Cập nhật thông tin cơ bản
+        if (request.getName() != null) user.setName(request.getName());
+
+        // 2. Cập nhật trạng thái (Active/Close)
+        if (request.getActive() != null) {
+            user.setActive(request.getActive());
+        }
+
+        // 3. Cập nhật Password nếu có (Encode)
+        if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+
+        // 4. Cập nhật Quyền (Roles) - Logic quan trọng cho Admin
+        if (request.getRoles() != null && !request.getRoles().isEmpty()) {
+            Set<Role> newRoles = new HashSet<>();
+            for (String roleName : request.getRoles()) {
+                Role role = roleRepository.findById(roleName)
+                        .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+                newRoles.add(role);
+            }
+            user.setRoles(newRoles);
+        }
+
         user = userRepository.save(user);
-        return userMapper.toUserResponse(user);
+
+        // Map response thủ công hoặc dùng mapper
+        UserCreateResponse res = userMapper.toUserResponse(user);
+        res.setRoles(user.getRoles());
+        return res;
     }
 
     @Override

@@ -7,6 +7,7 @@ import com.example.WebKtx.service.StudentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -36,6 +37,12 @@ public class StudentController {
     @ApiMessage("Get students by room success")
     public ResponseEntity<?> getStudentsByRoom(@PathVariable String roomId) {
         return ResponseEntity.ok(service.getStudentsInRoom(roomId));
+    }
+    @PutMapping("/{id}/remove-room")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')") // Bảo mật
+    public ResponseEntity<?> removeStudentFromRoom(@PathVariable String id) {
+        service.removeStudentFromRoom(id);
+        return ResponseEntity.ok("Removed student from room successfully");
     }
 }
 

@@ -18,4 +18,5 @@ public interface StudentService {
 
     List<StudentResponse> getAll();
     List<StudentInRoomResponse> getStudentsInRoom(String roomId);
+    void removeStudentFromRoom(String studentId);
 }

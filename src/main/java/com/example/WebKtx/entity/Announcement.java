@@ -30,14 +30,14 @@ public class Announcement {
 
     @Enumerated(EnumType.STRING)
     @Column(name="target", nullable = false, length = 16)
-    Target target;              // ALL | STUDENT | MANAGER ... (tùy enum của bạn)
+    Target target;              // ALL | STUDENT | MANAGER
 
     @Column(name="created_at", nullable = false)
     LocalDateTime createdAt;
 
     @Enumerated(EnumType.STRING)
     @Column(name="channel", nullable = false, length = 16)
-    Channel channel;            // WEB | EMAIL | MOBILE ... (tùy enum)
+    Channel channel;            // WEB | EMAIL
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="created_by")

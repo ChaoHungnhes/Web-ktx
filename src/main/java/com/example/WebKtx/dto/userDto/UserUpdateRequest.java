@@ -15,8 +15,9 @@ import java.util.Set;
 @Data @AllArgsConstructor @NoArgsConstructor @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserUpdateRequest {
-    @NotBlank String name;
+    String name;
     String password;
     @Enumerated(EnumType.STRING)
     ActiveEnum active;
+    Set<String> roles;
 }

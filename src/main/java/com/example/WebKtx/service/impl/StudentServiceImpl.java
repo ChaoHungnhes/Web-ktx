@@ -142,5 +142,29 @@ public class StudentServiceImpl implements StudentService {
         }
         return repo.findByRoomIdAsDto(roomId);
     }
+    // Trong StudentServiceImpl
+    @Override
+    @Transactional
+    public void removeStudentFromRoom(String studentId) {
+        // 1. Tìm sinh viên
+        Student student = repo.findById(studentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found"));
+
+        // 2. Kiểm tra xem sinh viên có đang ở phòng nào không
+        Room currentRoom = student.getRoom();
+        if (currentRoom == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Student is not in any room");
+        }
+
+        // 3. Xóa liên kết phòng
+        student.setRoom(null);
+        repo.save(student);
+
+        // 4. Cập nhật lại số lượng người trong phòng cũ (Sync count)
+        // Logic tương tự như trong hàm update của bạn
+        long newCount = repo.countByRoomId(currentRoom.getId());
+        currentRoom.setCurrentOccupants((int) newCount);
+        roomRepo.save(currentRoom);
+    }
 }
 

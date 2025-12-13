@@ -2,6 +2,7 @@ package com.example.WebKtx.service.impl;
 
 import com.example.WebKtx.common.Constant;
 import com.example.WebKtx.common.CookieUtils;
+import com.example.WebKtx.common.Enum.ActiveEnum;
 import com.example.WebKtx.common.ErrorCode;
 import com.example.WebKtx.dto.authDto.*;
 import com.example.WebKtx.entity.InvalidatedToken;
@@ -136,6 +137,7 @@ public class AuthenticationImpl implements AuthenticationService {
         var user = userRepository
                 .findByEmail(authenticationRequest.getEmail())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        if(user.getActive().equals(ActiveEnum.CLOSE)) throw new RuntimeException("user close");
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         boolean authenticated = passwordEncoder.matches(
                 authenticationRequest.getPassword(),
