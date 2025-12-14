@@ -44,5 +44,9 @@ public class StudentController {
         service.removeStudentFromRoom(id);
         return ResponseEntity.ok("Removed student from room successfully");
     }
+    @GetMapping("/with-room")
+    public ResponseEntity<?> getStudentsWithRoom() {
+        return ResponseEntity.ok(service.getStudentsWithRoom());
+    }
 }
 

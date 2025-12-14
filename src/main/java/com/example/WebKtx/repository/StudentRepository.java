@@ -34,4 +34,5 @@ public interface StudentRepository extends JpaRepository<Student, String> {
 
     @Query("select count(s) from Student s where s.room is not null")
     long countByRoomIsNotNull();
+    List<Student> findByRoomIsNotNull();
 }

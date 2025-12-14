@@ -166,5 +166,12 @@ public class StudentServiceImpl implements StudentService {
         currentRoom.setCurrentOccupants((int) newCount);
         roomRepo.save(currentRoom);
     }
+
+    @Override
+    public List<StudentResponse> getStudentsWithRoom() {
+        return repo.findByRoomIsNotNull().stream()
+                .map(mapper::toResponse)
+                .toList();
+    }
 }
 
